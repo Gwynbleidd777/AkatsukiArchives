@@ -633,7 +633,7 @@ const Register = () => {
                 </>
               ) : (
                 <>
-                  <Flex
+                  {/* <Flex
                     align="center"
                     color={colorMode === "light" ? "#385A64" : "#00DFC0"}
                     mt={3}
@@ -670,7 +670,7 @@ const Register = () => {
                       marginRight="2"
                     />
                     Continue with Google
-                  </Button>
+                  </Button> */}
                 </>
               )}
             </FormControl>

@@ -248,9 +248,7 @@ const AllItems = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
-  const verifiedItems = items.filter(
-    (item) => !item.deleted && item.verified && item.claimed === "unclaimed"
-  );
+  const verifiedItems = items.filter((item) => !item.deleted && item.verified);
   const totalPages = Math.ceil(verifiedItems.length / itemsPerPage);
 
   const fetchItems = async (searchQuery = "") => {
@@ -439,10 +437,7 @@ const AllItems = () => {
       const startIdx = i * itemsPerRow[3]; // Initialize with the maximum items per row (for larger screens)
       const endIdx = Math.min(startIdx + itemsPerRow[3], itemsPerPage); // Initialize with the maximum items per row (for larger screens)
       const rowItems = items
-        .filter(
-          (item) =>
-            !item.deleted && item.verified && item.claimed === "unclaimed"
-        )
+        .filter((item) => !item.deleted && item.verified)
         .slice(startIndex + startIdx, startIndex + endIdx);
 
       const row = (

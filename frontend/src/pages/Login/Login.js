@@ -465,7 +465,7 @@ const Login = () => {
                   Sign In
                 </Button>
 
-                <Flex
+                {/* <Flex
                   align="center"
                   color={colorMode === "light" ? "#385A64" : "#00DFC0"}
                   mt={3}
@@ -501,7 +501,7 @@ const Login = () => {
                     marginRight="2"
                   />
                   Continue with Google
-                </Button>
+                </Button> */}
               </form>
             </MotionBox>
 

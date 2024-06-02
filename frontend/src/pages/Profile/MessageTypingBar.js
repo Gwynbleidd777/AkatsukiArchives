@@ -13,13 +13,6 @@ const TypingBar = ({ sendMessage }) => {
 
   return (
     <Flex
-      position="fixed"
-      bottom={0}
-      left={0}
-      right={0}
-      bg="white"
-      p={4}
-      boxShadow="md"
     >
       <Input
         flex="1"
