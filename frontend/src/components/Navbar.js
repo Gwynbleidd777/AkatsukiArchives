@@ -162,7 +162,7 @@ const Navbar = () => {
           variant="ghost"
           aria-label="Toggle Dark Mode"
           fontSize="20px"
-          color={colorMode === "dark" ? "white" : "#385A64"} // Adjust icon color
+          color={colorMode === "dark" ? "#00DFC0" : "#385A64"}
           marginRight="4"
           onClick={toggleColorMode}
         />

@@ -28,6 +28,9 @@ const AdminSidebar = () => {
   const location = useLocation();
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
+  const highlightColor = colorMode === "dark" ? "#00DFC0" : "#00DFC0";
+  const textColor = colorMode === "dark" ? "#FFFFFF" : "#385A64";
+  const hoverColor = colorMode === "dark" ? "#00DFC0" : "lightgrey";
 
   const navigateTo = (path) => {
     navigate(path);
@@ -61,11 +64,6 @@ const AdminSidebar = () => {
       console.error("Logout failed:", error);
     }
   };
-
-  // Determine color values based on color mode
-  const highlightColor = colorMode === "dark" ? "#00DFC0" : "#00DFC0";
-  const textColor = colorMode === "dark" ? "#FFFFFF" : "#385A64";
-  const hoverColor = colorMode === "dark" ? "#00DFC0" : "lightgrey";
 
   return (
     <Box

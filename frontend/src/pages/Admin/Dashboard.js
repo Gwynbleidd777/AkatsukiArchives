@@ -39,7 +39,6 @@ const AdminDashboard = () => {
       <Box ml={isLargerThan768 ? "17%" : 0}>
         <AdminNavbar />
         <Box p={8}>
-          {/* Analytics Content */}
           <Flex
             flexWrap="wrap"
             justifyContent="space-between"

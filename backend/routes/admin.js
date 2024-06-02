@@ -42,6 +42,21 @@ router.get("/profile", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/items", verifyToken, async (req, res) => {
+  try {
+    // Find all items
+    const items = await Item.find();
+    if (!items || items.length === 0) {
+      return res.status(404).json({ message: "No items found" });
+    }
+
+    res.json(items);
+  } catch (error) {
+    console.error("Error fetching items:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 router.get("/profile/:userId", verifyToken, async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -68,7 +83,8 @@ router.get("/profile/:userId", verifyToken, async (req, res) => {
       dateOfBirth: (profile && profile.dateOfBirth) || "N/A",
       gender: (profile && profile.gender) || "N/A",
       admin: user.admin,
-      imageUrl: (profileImage && profileImage.imageUrl) || "https://bit.ly/broken-link",
+      imageUrl:
+        (profileImage && profileImage.imageUrl) || "https://bit.ly/broken-link",
       idType: (profile && profile.idType) || "N/A",
       idNumber: (profile && profile.idNumber) || "N/A",
       idImageUrl: (profile && profile.idImageUrl) || null,
@@ -80,6 +96,23 @@ router.get("/profile/:userId", verifyToken, async (req, res) => {
     res.json(userData);
   } catch (error) {
     console.error("Error fetching user info:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.get("/item/:itemId", verifyToken, async (req, res) => {
+  try {
+    const itemId = req.params.itemId;
+
+    // Find the item by ID
+    const item = await Item.findById(itemId);
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.json(item);
+  } catch (error) {
+    console.error("Error fetching item:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -256,11 +289,12 @@ router.delete("/delete-message/:userId", verifyToken, async (req, res) => {
 
 router.post("/store-notification/:userId", verifyToken, async (req, res) => {
   try {
-    const { userId, message, type, isRead } = req.body;
+    const { userId, itemId, message, type, isRead } = req.body;
 
     // Create a new notification
     const notification = new Notification({
       userId,
+      itemId,
       message,
       type,
       isRead,
@@ -272,6 +306,47 @@ router.post("/store-notification/:userId", verifyToken, async (req, res) => {
     res.json({ message: "Notification stored successfully" });
   } catch (error) {
     console.error("Error storing notification:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.get("/get-user-id/:itemId", verifyToken, async (req, res) => {
+  try {
+    // Find the item by ID
+    const item = await Item.findById(req.params.itemId);
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    // Retrieve the user ID associated with the item
+    const userId = item.user._id;
+
+    res.json({ userId });
+  } catch (error) {
+    console.error("Error getting user ID:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.put("/update-item/:itemId", verifyToken, async (req, res) => {
+  try {
+    const itemId = req.params.itemId;
+    const updateData = req.body;
+
+    // Find the item by ID and update the fields
+    const updatedItem = await Item.findByIdAndUpdate(itemId, updateData, {
+      new: true,
+    });
+
+    // Check if the item was found and updated
+    if (!updatedItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    res.json({ message: "Item updated successfully", item: updatedItem });
+  } catch (error) {
+    console.error("Error updating item:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });

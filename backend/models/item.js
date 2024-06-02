@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const itemSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   itemName: { type: String, required: true },
@@ -18,12 +18,14 @@ const itemSchema = new mongoose.Schema({
   mainImage: { type: String, required: true },
   additionalImages: [{ type: String }],
   brand: { type: String },
-  itemColor: { type: String },
-  verified: { type: Boolean, default: false }, // New field for verification status
-  claimed: { type: String }, // Change the type to String
+  itemColor: { type: String, default: 'Others' },
+  mainImageEmbedding: { type: [Number], required: true },
+  additionalImagesEmbeddings: { type: [[Number]], default: [] },
+  claimed: { type: String, default: 'unclaimed' },
+  verified: { type: Boolean, default: false },
   deleted: { type: Boolean, default: false },
 });
 
-const Item = mongoose.model("Item", itemSchema);
+const Item = mongoose.model('Item', itemSchema);
 
 module.exports = Item;

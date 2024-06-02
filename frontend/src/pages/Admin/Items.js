@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -20,144 +20,36 @@ import AdminNavbar from "./AdminNavbar";
 import AdminSidebar from "./AdminSidebar";
 import AdminFooter from "./AdminFooter";
 import ScrollToTopButton from "../../components/ScrollUp";
+import axios from "axios";
 
 const AdminItems = () => {
   const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
   const { colorMode } = useColorMode();
+  const [items, setItems] = useState([]);
 
-  const handleSearch = () => {
-    // Handle search functionality here
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:5000/api/admin/items",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Backend response:", response.data); // Log backend response
+      setItems(response.data);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
   };
 
-  // Dummy function to generate unique sets of values
-  const generateDummySets = () => {
-    const dummyData = [
-      {
-        id: 1,
-        itemName: "Apple Watch",
-        category: "Watch",
-        itemType: "Lost",
-      },
-      {
-        id: 2,
-        itemName: "Laptop",
-        category: "Electronics",
-        itemType: "Found",
-      },
-      {
-        id: 3,
-        itemName: "Wallet",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 4,
-        itemName: "Sunglasses",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 5,
-        itemName: "Backpack",
-        category: "Bags",
-        itemType: "Found",
-      },
-      {
-        id: 6,
-        itemName: "Mobile Phone",
-        category: "Electronics",
-        itemType: "Lost",
-      },
-      {
-        id: 7,
-        itemName: "Headphones",
-        category: "Electronics",
-        itemType: "Found",
-      },
-      {
-        id: 8,
-        itemName: "Keys",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 9,
-        itemName: "Book",
-        category: "Books",
-        itemType: "Found",
-      },
-      {
-        id: 10,
-        itemName: "Umbrella",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 11,
-        itemName: "Water Bottle",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 12,
-        itemName: "Jacket",
-        category: "Clothing",
-        itemType: "Found",
-      },
-      {
-        id: 13,
-        itemName: "Glasses",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 14,
-        itemName: "Notebook",
-        category: "Stationery",
-        itemType: "Found",
-      },
-      {
-        id: 15,
-        itemName: "Charger",
-        category: "Electronics",
-        itemType: "Lost",
-      },
-      {
-        id: 16,
-        itemName: "Watch",
-        category: "Accessories",
-        itemType: "Found",
-      },
-      {
-        id: 17,
-        itemName: "Bag",
-        category: "Bags",
-        itemType: "Lost",
-      },
-      {
-        id: 18,
-        itemName: "Wallet",
-        category: "Accessories",
-        itemType: "Lost",
-      },
-      {
-        id: 19,
-        itemName: "Mobile Phone",
-        category: "Electronics",
-        itemType: "Found",
-      },
-      {
-        id: 20,
-        itemName: "Headphones",
-        category: "Electronics",
-        itemType: "Lost",
-      },
-    ];
-
-    return dummyData;
-  };
-
-  const dummyData = generateDummySets();
+  const handleSearch = () => {};
 
   return (
     <Box>
@@ -214,7 +106,13 @@ const AdminItems = () => {
         </Box>
 
         {/* Table */}
-        <Box width={{ base: "90%", md: "90%" }} ml="auto" mr="auto" mb={8}>
+        <Box
+          width={{ base: "90%", md: "90%" }}
+          ml="auto"
+          mr="auto"
+          mb={8}
+          overflowX="auto"
+        >
           <Table
             variant="simple"
             size="sm"
@@ -228,18 +126,30 @@ const AdminItems = () => {
                 <Th>Item Name</Th>
                 <Th>Category</Th>
                 <Th>Item Type</Th>
+                <Th>Location</Th>
                 <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {dummyData.map((data) => (
-                <Tr key={data.id}>
-                  <Td>{data.id}</Td>
-                  <Td>{data.itemName}</Td>
-                  <Td>{data.category}</Td>
-                  <Td>{data.itemType}</Td>
+              {items.map((item, index) => (
+                <Tr key={index + 1}>
+                  <Td whiteSpace="normal" wordWrap="break-word">
+                    {index + 1}
+                  </Td>
+                  <Td whiteSpace="normal" wordWrap="break-word">
+                    {item.itemName}
+                  </Td>
+                  <Td whiteSpace="normal" wordWrap="break-word">
+                    {item.category}
+                  </Td>
+                  <Td whiteSpace="normal" wordWrap="break-word">
+                    {item.itemType}
+                  </Td>
+                  <Td whiteSpace="normal" wordWrap="break-word">
+                    {item.location}
+                  </Td>
                   <Td>
-                    <Link to="/admin-single-item">
+                    <Link to={`/admin-single-item/${item._id}`}>
                       <IconButton
                         icon={<ViewIcon />}
                         variant="ghost"

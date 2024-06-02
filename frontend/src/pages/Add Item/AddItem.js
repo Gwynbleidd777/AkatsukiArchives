@@ -21,6 +21,8 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import AuthenticatedNavbar from "../../components/AuthNav";
 import Footer from "../../components/Footer";
 import ScrollToTopButton from "../../components/ScrollUp";
+import * as mobilenet from "@tensorflow-models/mobilenet";
+import * as tf from "@tensorflow/tfjs";
 
 const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
@@ -157,12 +159,12 @@ const AddItem = () => {
 
     const formDataCopy = new FormData();
     formDataCopy.append("file", file);
-    formDataCopy.append("upload_preset", process.env.CLOUDINARY_PRESET_KEY);
-    formDataCopy.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
+    formDataCopy.append("upload_preset", "AkatsukiArchives");
+    formDataCopy.append("cloud_name", "mohit777");
 
     try {
       const response = await fetch(
-        process.env.CLOUDINARY_UPLOAD_URL,
+        "https://api.cloudinary.com/v1_1/mohit777/image/upload",
         {
           method: "POST",
           body: formDataCopy,
@@ -192,12 +194,12 @@ const AddItem = () => {
       if (image) {
         const formDataCopy = new FormData();
         formDataCopy.append("file", image);
-        formDataCopy.append("upload_preset", process.env.CLOUDINARY_PRESET_KEY);
-        formDataCopy.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
+        formDataCopy.append("upload_preset", "AkatsukiArchives");
+        formDataCopy.append("cloud_name", "mohit777");
 
         try {
           const response = await fetch(
-            process.env.CLOUDINARY_UPLOAD_URL,
+            "https://api.cloudinary.com/v1_1/mohit777/image/upload",
             {
               method: "post",
               body: formDataCopy,
@@ -218,36 +220,93 @@ const AddItem = () => {
     return uploadedAdditionalImages;
   };
 
+  const generateEmbedding = async (imageElement) => {
+    console.log("Loading model...");
+    const model = await mobilenet.load();
+    console.log("Model loaded, processing image...");
+
+    const tensor = tf.browser
+      .fromPixels(imageElement)
+      .resizeNearestNeighbor([224, 224])
+      .toFloat()
+      .expandDims();
+
+    console.log("Generating embedding...");
+    const embedding = model.infer(tensor, true); // Get embeddings
+    console.log("Embedding generated.");
+    return embedding.arraySync()[0];
+  };
+
+  const fetchImageElement = async (imageUrl) => {
+    console.log("Fetching image:", imageUrl);
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = imageUrl;
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
+    console.log("Image fetched:", imageUrl);
+    return img;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Retrieve token from local storage
       const token = localStorage.getItem("token");
 
-      // Check if profile is complete
-      const response = await fetch(
+      const profileResponse = await fetch(
         "http://localhost:5000/api/auth/check-profile-completion",
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Use token from local storage
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      if (!response.ok) {
+      if (!profileResponse.ok) {
         throw new Error("Failed to check profile completion");
       }
 
-      const profileCompletionResult = await response.json();
+      const profileCompletionResult = await profileResponse.json();
+
+      const verificationResponse = await fetch(
+        "http://localhost:5000/api/auth/check-user-verification",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!verificationResponse.ok) {
+        throw new Error("Failed to check user verification");
+      }
+
+      const verificationResult = await verificationResponse.json();
+
+      if (!profileCompletionResult.complete && !verificationResult.verified) {
+        toast({
+          title: "Profile Incomplete & Unverified",
+          description: "Complete and verify your profile before posting.",
+          status: "warning",
+          position: "top",
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       if (!profileCompletionResult.complete) {
         toast({
           title: "Profile Incomplete",
-          description: "Please complete your profile before posting the item.",
+          description: "Complete your profile before posting.",
           status: "warning",
           position: "top",
           duration: 3000,
@@ -257,11 +316,23 @@ const AddItem = () => {
         return;
       }
 
-      // Validate User Profile Image Fields
+      if (!verificationResult.verified) {
+        toast({
+          title: "Profile Unverified",
+          description: "Verify your profile before posting.",
+          status: "warning",
+          position: "top",
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       if (!selectedImage) {
         toast({
-          title: "Please upload the main image for your item",
-          description: "Item not posted due to missing main image.",
+          title: "Main Image Missing",
+          description: "Upload the main image for your item.",
           status: "warning",
           position: "top",
           duration: 3000,
@@ -271,7 +342,7 @@ const AddItem = () => {
         return;
       }
 
-      // Main image upload to Cloudinary
+      console.log("Uploading main image to Cloudinary...");
       const mainImageUrl = await uploadMainImageToCloudinary();
       console.log("Main Image URL:", mainImageUrl);
       if (!mainImageUrl) {
@@ -280,20 +351,39 @@ const AddItem = () => {
         return;
       }
 
-      // Additional images upload to Cloudinary
+      console.log("Uploading additional images to Cloudinary...");
       const uploadedAdditionalImages = await uploadAdditionalImagesToCloudinary(
         formData.additionalImages
       );
       console.log("Uploaded Additional Images:", uploadedAdditionalImages);
 
-      // Update form data with image URLs
+      // Filter out null values from the uploadedAdditionalImages array
+      const validAdditionalImages = uploadedAdditionalImages.filter(
+        (url) => url !== null
+      );
+      console.log("Valid Additional Images:", validAdditionalImages);
+
+      console.log("Fetching and processing main image...");
+      const mainImageElement = await fetchImageElement(mainImageUrl);
+      const mainImageEmbedding = await generateEmbedding(mainImageElement);
+
+      console.log("Fetching and processing additional images...");
+      const additionalImagesEmbeddings = await Promise.all(
+        validAdditionalImages.map(async (url) => {
+          const imgElement = await fetchImageElement(url);
+          return generateEmbedding(imgElement);
+        })
+      );
+
       const updatedFormData = {
         ...formData,
         mainImage: mainImageUrl,
-        additionalImages: uploadedAdditionalImages,
+        additionalImages: validAdditionalImages,
+        mainImageEmbedding,
+        additionalImagesEmbeddings,
       };
 
-      // Submit form data
+      console.log("Submitting form data...");
       const postResponse = await fetch(
         "http://localhost:5000/api/auth/post-items",
         {
@@ -625,7 +715,7 @@ const AddItem = () => {
                             colorMode === "dark" ? "#385A64" : "#2D3748",
                           color: colorMode === "dark" ? "#00DFC0" : "#385A64",
                         }}
-                        width={{ base: "30%", md: "10%" }}
+                        width={{ base: "30%", md: "15%" }}
                       >
                         <input
                           type="file"
@@ -690,19 +780,20 @@ const AddItem = () => {
                       colorMode === "light" ? "#385A64" : "#00DFC0"
                     }
                   >
-                    <option value="red">Red</option>
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="yellow">Yellow</option>
-                    <option value="orange">Orange</option>
-                    <option value="purple">Purple</option>
-                    <option value="pink">Pink</option>
-                    <option value="black">Black</option>
-                    <option value="white">White</option>
-                    <option value="gray">Gray</option>
-                    <option value="brown">Brown</option>
-                    <option value="silver">Silver</option>
-                    <option value="gold">Gold</option>
+                    <option value="Red">Red</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Green">Green</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Purple">Purple</option>
+                    <option value="Pink">Pink</option>
+                    <option value="Black">Black</option>
+                    <option value="White">White</option>
+                    <option value="Gray">Gray</option>
+                    <option value="Brown">Brown</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Others">Others</option>
                   </Select>
                 </FormControl>
               </Grid>
@@ -793,7 +884,7 @@ const AddItem = () => {
                               color:
                                 colorMode === "dark" ? "#00DFC0" : "#385A64",
                             }}
-                            width={{ base: "30%", md: "20%" }}
+                            width={{ base: "30%", md: "30%" }}
                           >
                             <input
                               type="file"

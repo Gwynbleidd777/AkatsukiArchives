@@ -1,18 +1,35 @@
-import React from "react";
-import { Flex, Input, IconButton } from "@chakra-ui/react";
-import { FiSend } from "react-icons/fi";
+import React, { useState } from "react";
+import { Box, Input, Button, Flex } from "@chakra-ui/react";
 
-const TypingBar = ({ buttonColor }) => {
+const TypingBar = ({ sendMessage }) => {
+  const [message, setMessage] = useState("");
+
+  const handleSend = () => {
+    if (message.trim()) {
+      sendMessage(message);
+      setMessage("");
+    }
+  };
+
   return (
-    <Flex align="center" p={4} borderTop="1px" borderColor="gray.200">
-      <Input placeholder="Type your message here..." flex="1" mr={2} />
-      <IconButton
-        aria-label="Send"
-        icon={<FiSend />}
-        colorScheme="blue"
-        size="sm"
-        color={buttonColor}
+    <Flex
+      position="fixed"
+      bottom={0}
+      left={0}
+      right={0}
+      bg="white"
+      p={4}
+      boxShadow="md"
+    >
+      <Input
+        flex="1"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Type a message..."
       />
+      <Button ml={2} onClick={handleSend} colorScheme="teal">
+        Send
+      </Button>
     </Flex>
   );
 };

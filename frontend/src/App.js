@@ -35,16 +35,17 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/my-items" element={<MyItems />} />
         <Route path="/messages" element={<Messages/>} />
+        <Route path="/messages/:chatId" element={<Messages/>} />
         <Route path="/help" element={<Help />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/add-item" element={<AddItem />} />
-        <Route path="/view-details" element={<SingleItem />} />
+        <Route path="/view-details/:itemId" element={<SingleItem />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-users" element={<AdminUsers />} />
         <Route path="/admin-items" element={<AdminItems />} />
         <Route path="/admin-history" element={<AdminHistory />} />
         <Route path="/admin-messages" element={<AdminMessages />} />
-        <Route path="/admin-single-item" element={<AdminSingleItem />} />
+        <Route path="/admin-single-item/:itemId" element={<AdminSingleItem />} />
         <Route path="/admin-single-user/:userId" element={<AdminSingleUser />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

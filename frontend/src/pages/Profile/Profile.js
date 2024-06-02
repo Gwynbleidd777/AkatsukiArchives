@@ -204,14 +204,20 @@ const Profile = () => {
       const { data } = response;
       console.log("Data:", data);
 
-      if (data && data.message === "Message retrieved successfully") {
+      if (
+        data &&
+        data.message === "Message retrieved successfully" &&
+        data.data.rejectionType === "profileVerification" // Check rejection type
+      ) {
         console.log(
           "Admin message retrieved successfully:",
           data.data.adminMessage
         );
         setAdminMessage(data.data.adminMessage);
       } else {
-        console.log("Message not retrieved successfully:", data.message);
+        console.log(
+          "Message not retrieved successfully or rejection type is not 'itemPostingVerification'"
+        );
       }
     } catch (error) {
       console.error("Error fetching admin message:", error);
@@ -269,11 +275,11 @@ const Profile = () => {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", process.env.CLOUDINARY_PRESET_KEY);
-        formData.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
+        formData.append("upload_preset", "AkatsukiArchives");
+        formData.append("cloud_name", "mohit777");
 
         const response = await fetch(
-          process.env.CLOUDINARY_UPLOAD_URL,
+          "https://api.cloudinary.com/v1_1/mohit777/image/upload",
           {
             method: "post",
             body: formData,
@@ -585,11 +591,11 @@ const Profile = () => {
       // Upload ID image to Cloudinary
       const formData = new FormData();
       formData.append("file", idImageFile);
-      formData.append("upload_preset", process.env.CLOUDINARY_PRESET_KEY);
-      formData.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
+      formData.append("upload_preset", "AkatsukiArchives");
+      formData.append("cloud_name", "mohit777");
 
       const response = await fetch(
-        process.env.CLOUDINARY_UPLOAD_URL,
+        "https://api.cloudinary.com/v1_1/mohit777/image/upload",
         {
           method: "post",
           body: formData,

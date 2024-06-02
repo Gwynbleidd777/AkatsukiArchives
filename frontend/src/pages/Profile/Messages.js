@@ -7,6 +7,8 @@ import {
   Text,
   Avatar,
 } from "@chakra-ui/react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import ProfileSidebar from "./ProfileSidebar";
 import ProfileNavbar from "./ProfileNavbar";
 import ProfileFooter from "./ProfileFooter";
@@ -15,76 +17,71 @@ import TypingBar from "./MessageTypingBar";
 const Profile = () => {
   const [isLargerThan768] = useMediaQuery("(min-width: 768px)");
   const { colorMode } = useColorMode();
-  const buttonColor = colorMode === "dark" ? "#00DFC0" : "#385A64";
-  const borderColor = "#00DFC0";
-
-  const users = [
-    { name: "Debabrata Barik", messages: [] },
-    { name: "Dharamveer Kumar", messages: [] },
-    { name: "Debraj Pal", messages: [] },
-    { name: "Rajdeep Biswas", messages: [] },
-    { name: "Manoj Gujjar", messages: [] },
-  ];
-
-  // Generate unique messages for each user
-  users.forEach((user) => {
-    for (let i = 0; i < 2; i++) {
-      let message;
-      if (i === 0) {
-        message = `Hello, I am ${user.name}. Nice to meet you!`;
-      } else {
-        const itemType = i % 1 === 0 ? "lost" : "found";
-        const itemName = itemType === "lost" ? "iPhone" : "iPhone";
-        const location =
-          itemType === "lost" ? "at your class" : "at your class";
-        const importance = itemType === "lost" ? "very important" : "valuable";
-        message = `I ${itemType} my ${itemName} ${location}. It's ${importance}. Have you seen it?`;
-      }
-      user.messages.push({ content: message, sender: i % 1 === 0 });
-    }
-  });
-
-  const [selectedUserMessages, setSelectedUserMessages] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { userId } = useParams();
+  const [messages, setMessages] = useState([]);
+  const [chatId, setChatId] = useState(null);
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
-    // Scroll to the bottom of the chat container when messages are loaded or updated
-    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-  }, [selectedUserMessages]);
+    const fetchChat = async () => {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:5000/api/chat",
+        { user1: userId, user2: localStorage.getItem("userId") },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setChatId(response.data._id);
+      fetchMessages(response.data._id);
+    };
 
-  const renderUsers = () => {
-    return users.map((user, index) => (
-      <Box
-        key={index}
-        _hover={{
-          bg: colorMode === "light" ? "gray.200" : "gray.800",
-        }}
-        borderRadius="md"
-        cursor="pointer"
-        p={2}
-        mb={1}
-        onClick={() => {
-          setSelectedUser(user);
-          setSelectedUserMessages(user.messages);
-        }}
-      >
-        <Flex align="center">
-          <Avatar size="md" name={user.name} />
-          <Text ml={2}>{user.name}</Text>
-        </Flex>
-      </Box>
-    ));
+    const fetchMessages = async (chatId) => {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `http://localhost:5000/api/messages/${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setMessages(response.data);
+    };
+
+    fetchChat();
+  }, [userId]);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const sendMessage = async (content) => {
+    const token = localStorage.getItem("token");
+    const response = await axios.post(
+      "http://localhost:5000/api/message",
+      { chatId, sender: localStorage.getItem("userId"), content },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setMessages((prevMessages) => [...prevMessages, response.data]);
   };
 
-  const renderMessages = (userMessages) => {
-    return userMessages.map((message, index) => (
+  const renderMessages = (messages) => {
+    return messages.map((message, index) => (
       <Box
         key={index}
         bg={colorMode === "light" ? "gray.50" : "gray.950"}
         p={2}
         borderRadius="lg"
-        textAlign={message.sender ? "right" : "left"}
+        textAlign={message.sender._id === localStorage.getItem("userId") ? "right" : "left"}
       >
         {message.content}
       </Box>
@@ -102,21 +99,8 @@ const Profile = () => {
               flex="1"
               borderRadius="15px"
               border="1px"
-              borderColor={borderColor}
+              borderColor="#00DFC0"
             >
-              {/* Left sidebar for users */}
-              <Box
-                w="20%"
-                h="100%"
-                bg={colorMode === "light" ? "gray.100" : "gray.900"}
-                borderTopLeftRadius="15px"
-                borderBottomLeftRadius="15px"
-                p={2}
-              >
-                {/* Dummy users list */}
-                {renderUsers()}
-              </Box>
-
               <Box
                 flex="1"
                 bg={colorMode === "light" ? "gray.50" : "gray.950"}
@@ -124,21 +108,6 @@ const Profile = () => {
                 borderBottomRightRadius="15px"
                 position="relative"
               >
-                {selectedUser && (
-                  <Flex
-                    justify="center"
-                    align="center"
-                    bg={colorMode === "light" ? "gray.100" : "gray.900"}
-                    borderTopRightRadius="15px"
-                    p={2}
-                    position="sticky"
-                    top="0"
-                    zIndex="sticky"
-                  >
-                    <Avatar size="sm" name={selectedUser.name} />
-                    <Text ml={2}>{selectedUser.name}</Text>
-                  </Flex>
-                )}
                 <Box
                   ref={chatContainerRef}
                   flex="1"
@@ -146,35 +115,9 @@ const Profile = () => {
                   padding="4"
                   mb={300}
                 >
-                  {/* Render messages */}
-                  {selectedUser ? (
-                    renderMessages(selectedUserMessages)
-                  ) : (
-                    <Text
-                      color={colorMode === "dark" ? "#00DFC0" : "#385A64"}
-                      textAlign="center"
-                      fontWeight="bold"
-                      fontSize="xl"
-                      mt="25%"
-                    >
-                      Click On Any User Account To Open Their Chats
-                    </Text>
-                  )}
+                  {renderMessages(messages)}
                 </Box>
-                {/* Typing bar */}
-                {selectedUser && (
-                  <TypingBar
-                    buttonColor={buttonColor}
-                    mt={10}
-                    style={{
-                      position: "fixed",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      zIndex: 1,
-                    }}
-                  />
-                )}
+                <TypingBar sendMessage={sendMessage} />
               </Box>
             </Flex>
           </Flex>

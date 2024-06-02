@@ -146,7 +146,6 @@ const Home = () => {
         textAlign={{ base: "center", md: "left" }}
         overflowX="hidden"
       >
-        {/* Left block with Img1 */}
         <Box flex="1" order={{ base: 2, md: 1 }} mb={{ base: "4", md: "0" }}>
           <MotionBox
             variants={slideInFromLeftImg1}
@@ -157,7 +156,6 @@ const Home = () => {
           </MotionBox>
         </Box>
 
-        {/* Right block with motto, underline, and sub-motto */}
         <MotionBox
           flex="1"
           order={{ base: 1, md: 2 }}
@@ -208,7 +206,6 @@ const Home = () => {
         </MotionBox>
       </Flex>
 
-      {/* New section for Project Objectives */}
       <Box mt="20" textAlign="center">
         <MotionBox
           variants={slideInFromLeft}
@@ -298,7 +295,6 @@ const Home = () => {
         </MotionBox>
       </Box>
 
-      {/* New section for Inspiration */}
       <Flex
         px={{ base: 4, md: 8 }} py={4}
         direction={{ base: "column", md: "row" }}
@@ -382,7 +378,6 @@ const Home = () => {
         </MotionBox>
       </Flex>
 
-      {/* New section for Project Objectives */}
       <Box mt="20" textAlign="center">
         <MotionBox
           variants={slideInFromLeft}
@@ -480,7 +475,6 @@ const Home = () => {
         </MotionBox>
       </Box>
 
-      {/* "Get Started" Button */}
       <Flex justify="center" mt={8}>
         <Button
           size="lg"

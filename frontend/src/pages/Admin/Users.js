@@ -106,7 +106,13 @@ const AdminUsers = () => {
         </Box>
 
         {/* Table */}
-        <Box width={{ base: "90%", md: "90%" }} ml="auto" mr="auto" mb={8}>
+        <Box
+          width={{ base: "90%", md: "90%" }}
+          ml="auto"
+          mr="auto"
+          mb={8}
+          overflowX="auto"
+        >
           <Table
             variant="simple"
             size="sm"
@@ -133,13 +139,23 @@ const AdminUsers = () => {
                   <Tr key={index + 1}>
                     {" "}
                     {/* Use index + 1 as the key */}
-                    <Td>{index + 1}</Td>{" "}
+                    <Td whiteSpace="normal" wordWrap="break-word">
+                      {index + 1}
+                    </Td>{" "}
                     {/* Display sequential numbers starting from 1 */}
-                    <Td>{user.fullName}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>{user.admin ? "Admin" : "User"}</Td>{" "}
+                    <Td whiteSpace="normal" wordWrap="break-word">
+                      {user.fullName}
+                    </Td>
+                    <Td whiteSpace="normal" wordWrap="break-word">
+                      {user.email}
+                    </Td>
+                    <Td whiteSpace="normal" wordWrap="break-word">
+                      {user.admin ? "Admin" : "User"}
+                    </Td>{" "}
                     {/* Show User Type */}
-                    <Td>{user.gender}</Td>
+                    <Td whiteSpace="normal" wordWrap="break-word">
+                      {user.gender}
+                    </Td>
                     <Td>
                       <Link to={`/admin-single-user/${user.userId}`}>
                         {" "}

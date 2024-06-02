@@ -7,13 +7,23 @@ const notificationSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  itemId: {
+    type: Schema.Types.ObjectId,
+    unique: true,
+    sparse: true,
+  },
+  chatId: {
+    type: Schema.Types.ObjectId,
+    unique: true,
+    sparse: true,
+  },
   message: {
     type: String,
     required: true,
   },
   type: {
     type: String,
-    enum: ['userVerification', 'message', 'itemClaim'],
+    enum: ['userVerification', 'itemVerification', 'itemDeletion','message', 'itemClaim'],
     required: true,
   },
   isRead: {

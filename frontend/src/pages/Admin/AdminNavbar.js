@@ -468,7 +468,7 @@ const AdminNavbar = () => {
           variant="ghost"
           aria-label="Toggle Dark Mode"
           fontSize="20px"
-          color={colorMode === "dark" ? "white" : "#385A64"}
+          color={colorMode === "dark" ? "#00DFC0" : "#385A64"}
           marginRight="7"
           onClick={toggleColorMode}
         />

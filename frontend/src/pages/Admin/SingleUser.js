@@ -298,7 +298,7 @@ const AdminSingleUser = () => {
         `http://localhost:5000/api/admin/store-notification/${userId}`,
         {
           userId,
-          message: "Your verification request has been accepted.", // Modify this message as needed
+          message: "Your profile verification request has been accepted.", // Modify this message as needed
           type: "userVerification",
           isRead: false, // Set isRead to false initially
         },
